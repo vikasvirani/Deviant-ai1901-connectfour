@@ -67,7 +67,7 @@ def validate_args(args):
     p1 = 0
     p2 = 0
 
-    print("player one = ", args.player_one)
+    #print("player one = ", args.player_one)
 
     if args.player_one not in PLAYER_TYPE_MAP:
         #print("here")

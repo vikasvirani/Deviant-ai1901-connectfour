@@ -94,9 +94,12 @@ def best_child(node, factor):
 
 
 def default_policy(state, turn):
-    while not state.terminal() and state.winner() == 0:
+    count = 100
+    while not state.terminal() and state.winner() == 0 and count > 0:
+        #print("while loop")
         state = state.next_state_rand(turn)
         turn *= -1
+        count -= 1
     return state.winner()
 
 
