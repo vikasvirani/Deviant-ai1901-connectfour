@@ -73,7 +73,7 @@ def validate_args(args):
         #print("here")
         #print('connectfour.agents.'+args.player_one+'.'+args.player_one)
         #playerTest = my_import('connectfour.agents.'+args.player_one+'.'+args.player_one)
-         
+
         p1 = locate('connectfour.agents.'+args.player_one)
 
         #RuntimeError("'{}' is not a valid player type".format(args.player_one))
@@ -87,7 +87,7 @@ def validate_args(args):
         (args.player_one == 'HumanPlayer' or args.player_two == 'HumanPlayer')
     ):
         raise RuntimeError("Cannot have human player when running with no graphics")
-    
+
     return p1, p2
 
 def my_import(name):
