@@ -23,6 +23,10 @@ class StudentAgent(RandomAgent):
         moves = []
 
         for move in valid_moves:
+            board_test = copy.deepcopy(board)
+            next_state_test = board_test.next_state(self.id % 2 + 1, move[1])
+            if next_state_test.winner() != 0:
+                return move
             next_state = board.next_state(self.id, move[1])
             moves.append( move )
             if next_state.winner() != 0:
@@ -99,12 +103,12 @@ class StudentAgent(RandomAgent):
 
         my_fours = self.checkStreak(board, 4, self.id)
         my_threes = self.checkStreak(board, 3, self.id)
-        #my_twos = self.checkStreak(board, 2, self.id)
+        my_twos = self.checkStreak(board, 2, self.id)
         opp_fours = self.checkStreak(board, 4,  self.id % 2 + 1)
         opp_threes = self.checkStreak(board, 3, self.id % 2 + 1)
-        #opp_twos = self.checkStreak(board, 2, self.id % 2 + 1)
+        opp_twos = self.checkStreak(board, 2, self.id % 2 + 1)
 
-        final_score = (((my_fours*16) + (my_threes*9)) - ((opp_fours*16) + (opp_threes*9)))/1000
+        final_score = (((my_fours*36) + (my_threes*9) + (my_twos*1)) - ((opp_fours*36) + (opp_threes*9) + (opp_twos*1)))/1000
         #- math.sqrt(math.log())((opp_fours*200000) + (opp_threes*100) + (opp_twos*1))
         #time()-cStart
         #return random.uniform(0, 1)
