@@ -1,11 +1,14 @@
 from connectfour.agents.computer_player import RandomAgent
+from time import gmtime
+import copy
 import random
+import math
 
 class StudentAgent(RandomAgent):
     def __init__(self, name):
         super().__init__(name)
-        self.MaxDepth = 1
-
+        self.MaxDepth = 4
+        self.count = 0
 
     def get_move(self, board):
         """
@@ -15,7 +18,6 @@ class StudentAgent(RandomAgent):
         Returns:
             A tuple of two integers, (row, col)
         """
-
         valid_moves = board.valid_moves()
         vals = []
         moves = []
@@ -23,6 +25,8 @@ class StudentAgent(RandomAgent):
         for move in valid_moves:
             next_state = board.next_state(self.id, move[1])
             moves.append( move )
+            if next_state.winner() != 0:
+                return move
             vals.append( self.dfMiniMax(next_state, 1) )
 
         bestMove = moves[vals.index( max(vals) )]
@@ -30,10 +34,11 @@ class StudentAgent(RandomAgent):
 
     def dfMiniMax(self, board, depth):
         # Goal return column with maximized scores of all possible next states
-        
+
         if depth == self.MaxDepth:
             return self.evaluateBoardState(board)
 
+        self.count += 1
         valid_moves = board.valid_moves()
         vals = []
         moves = []
@@ -43,11 +48,14 @@ class StudentAgent(RandomAgent):
                 next_state = board.next_state(self.id % 2 + 1, move[1])
             else:
                 next_state = board.next_state(self.id, move[1])
-                
+
             moves.append( move )
             vals.append( self.dfMiniMax(next_state, depth + 1) )
 
-        
+        #print(vals)
+        #print("Player :"+ str(depth % 2))
+        #print(str(self.count))
+
         if depth % 2 == 1:
             bestVal = min(vals)
         else:
@@ -57,24 +65,24 @@ class StudentAgent(RandomAgent):
 
     def evaluateBoardState(self, board):
         """
-        Your evaluation function should look at the current state and return a score for it. 
+        Your evaluation function should look at the current state and return a score for it.
         As an example, the random agent provided works as follows:
             If the opponent has won this game, return -1.
             If we have won the game, return 1.
             If neither of the players has won, return a random number.
         """
-        
+
         """
         These are the variables and functions for board objects which may be helpful when creating your Agent.
         Look into board.py for more information/descriptions of each, or to look for any other definitions which may help you.
 
         Board Variables:
-            board.width 
+            board.width
             board.height
             board.last_move
             board.num_to_connect
             board.winning_zones
-            board.score_array 
+            board.score_array
             board.current_player_score
 
         Board Functions:
@@ -87,6 +95,88 @@ class StudentAgent(RandomAgent):
             next_state(turn)
             winner()
         """
-				
-        return random.uniform(0, 1)
+        #cStart=time()
 
+        my_fours = self.checkStreak(board, 4, self.id)
+        my_threes = self.checkStreak(board, 3, self.id)
+        #my_twos = self.checkStreak(board, 2, self.id)
+        opp_fours = self.checkStreak(board, 4,  self.id % 2 + 1)
+        opp_threes = self.checkStreak(board, 3, self.id % 2 + 1)
+        #opp_twos = self.checkStreak(board, 2, self.id % 2 + 1)
+
+        final_score = (((my_fours*16) + (my_threes*9)) - ((opp_fours*16) + (opp_threes*9)))/1000
+        #- math.sqrt(math.log())((opp_fours*200000) + (opp_threes*100) + (opp_twos*1))
+        #time()-cStart
+        #return random.uniform(0, 1)
+        if opp_fours > 0:
+            return -1
+        elif opp_fours > 0:
+            return 1
+        else:
+            return final_score
+
+    def checkStreak(self, board, streak, turn):
+        count = 0
+
+        count += self._check_rows(board, streak, turn)
+        count += self._check_columns(board, streak, turn)
+        count += self._check_diagonals(board, streak, turn)
+
+        # return the sum of streaks of length 'streak'
+        return count
+
+    def _check_rows(self, board, streak, turn):
+        count = 0
+        for row in board.board:
+            same_count = 1
+            curr = turn
+            for i in range(0, board.width):
+                if row[i] == curr:
+                    same_count += 1
+                    if same_count == streak and curr != 0:
+                        count += 1
+                else:
+                    same_count = 1
+        return count
+
+    def _check_columns(self, board, streak, turn):
+        count = 0
+        for i in range(board.width):
+            same_count = 1
+            curr = turn
+            for j in range(0, board.height):
+                if board.board[j][i] == curr:
+                    same_count += 1
+                    if same_count == streak and curr != 0:
+                        count += 1
+                else:
+                    same_count = 1
+        return count
+
+    def _check_diagonals(self, board, streak, turn):
+        count = 0
+        boards = [
+            board.board,
+            [row[::-1] for row in copy.deepcopy(board.board)]
+        ]
+
+        for b in boards:
+            for i in range(board.width - streak + 1):
+                for j in range(board.height - streak + 1):
+                    if i > 0 and j > 0:  # would be a redundant diagonal
+                        continue
+
+                    # (j, i) is start of diagonal
+                    same_count = 1
+                    curr = turn
+                    k, m = j, i
+                    while k < board.height and m < board.width:
+                            if b[k][m] == curr:
+                                same_count += 1
+                                if same_count == streak and curr != 0:
+                                    count += 1
+                            else:
+                                same_count = 1
+                            k += 1
+                            m += 1
+        return count
