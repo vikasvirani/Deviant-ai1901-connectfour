@@ -21,6 +21,8 @@ class StudentAgent(RandomAgent):
         valid_moves = board.valid_moves()
         vals = []
         moves = []
+        self.count += 1
+        #random.shuffle(list(valid_moves))
 
         for move in valid_moves:
             board_test = copy.deepcopy(board)
@@ -33,6 +35,8 @@ class StudentAgent(RandomAgent):
                 return move
             vals.append( self.dfMiniMax(next_state, 1) )
 
+        print(vals)
+        #random.shuffle(list(vals))
         bestMove = moves[vals.index( max(vals) )]
         return bestMove
 
@@ -40,12 +44,13 @@ class StudentAgent(RandomAgent):
         # Goal return column with maximized scores of all possible next states
 
         if depth == self.MaxDepth:
-            return self.evaluateBoardState(board)
+            return self.evaluateBoardState(board, depth)
 
-        self.count += 1
         valid_moves = board.valid_moves()
         vals = []
         moves = []
+
+        #random.shuffle(list(valid_moves))
 
         for move in valid_moves:
             if depth % 2 == 1:
@@ -67,7 +72,7 @@ class StudentAgent(RandomAgent):
 
         return bestVal
 
-    def evaluateBoardState(self, board):
+    def evaluateBoardState(self, board, depth):
         """
         Your evaluation function should look at the current state and return a score for it.
         As an example, the random agent provided works as follows:
@@ -100,6 +105,13 @@ class StudentAgent(RandomAgent):
             winner()
         """
         #cStart=time()
+        if depth % 2 == 1:
+            if self.id % 2 == 1:
+                depth -= 1
+            else:
+                depth += 1
+
+        nbmove = self.count + (depth/2)
 
         my_fours = self.checkStreak(board, 4, self.id)
         my_threes = self.checkStreak(board, 3, self.id)
@@ -108,16 +120,16 @@ class StudentAgent(RandomAgent):
         opp_threes = self.checkStreak(board, 3, self.id % 2 + 1)
         opp_twos = self.checkStreak(board, 2, self.id % 2 + 1)
 
-        final_score = (((my_fours*36) + (my_threes*9) + (my_twos*1)) - ((opp_fours*36) + (opp_threes*9) + (opp_twos*1)))/1000
-        #- math.sqrt(math.log())((opp_fours*200000) + (opp_threes*100) + (opp_twos*1))
+        final_score = (((((my_fours*36) + (my_threes*9) + (my_twos*1)) - ((opp_fours*36) + (opp_threes*9) + (opp_twos*1)))/1000) + (22-nbmove)/18)/2
+        # + (22-nbmove)/18)/2
         #time()-cStart
         #return random.uniform(0, 1)
-        if opp_fours > 0:
-            return -1
-        elif opp_fours > 0:
-            return 1
-        else:
-            return final_score
+        #if opp_fours > 0:
+        #    return -1
+        #elif opp_fours > 0:
+        #    return 1
+        #else:
+        return final_score
 
     def checkStreak(self, board, streak, turn):
         count = 0
