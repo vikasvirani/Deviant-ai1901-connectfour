@@ -25,30 +25,14 @@ class StudentAgent(RandomAgent):
         #random.shuffle(list(valid_moves))
 
         for move in valid_moves:
-            board_test = copy.deepcopy(board)
-            next_state_test = board_test.next_state(self.id % 2 + 1, move[1])
-            if next_state_test.winner() != 0:
-                return move
             next_state = board.next_state(self.id, move[1])
             moves.append( move )
-            if next_state.winner() != 0:
-                return move
+            #revised MiniMax with alpha-beta value
             vals.append( self.dfMiniMax(next_state, 1,-math.inf, math.inf) )
 
         #print(vals)
         #random.shuffle(list(vals))
-        max_count = vals.count(max(vals))
-        max_index = []
-
-        if max_count > 1:
-            for i in range(len(vals)):
-                if vals[i] == max(vals):
-                    max_index.append(i)
-
-            bestMove = moves[max_index[int(max_count/2)]]
-        else:
-            bestMove = moves[vals.index( max(vals) )]
-
+        bestMove = moves[vals.index( max(vals) )]
         return bestMove
 
     def dfMiniMax(self, board, depth, alpha, beta):
@@ -70,7 +54,7 @@ class StudentAgent(RandomAgent):
         moves = []
 
         #random.shuffle(list(valid_moves))
-
+        #
         for move in valid_moves:
             if depth % 2 == 1:
                 next_state = board.next_state(self.id % 2 + 1, move[1])
@@ -80,6 +64,7 @@ class StudentAgent(RandomAgent):
             moves.append( move )
             vals.append( self.dfMiniMax(next_state, depth + 1, alpha, beta) )
 
+            #alpha-beta pruning
             if depth % 2 == 1:
                 beta = min(min(vals), beta)
                 if alpha >= beta:
@@ -89,7 +74,6 @@ class StudentAgent(RandomAgent):
                 if alpha >= beta:
                     break
 
-        #print(vals)
         #print("Player :"+ str(depth % 2))
         #print(str(self.count))
         max_count = vals.count(max(vals))
@@ -98,32 +82,16 @@ class StudentAgent(RandomAgent):
         min_index = []
 
         if depth % 2 == 1:
-            if min_count > 1:
-                for i in range(len(vals)):
-                    if vals[i] == min(vals):
-                        min_index.append(i)
-
-                bestVal = vals[min_index[int(min_count/2)]]
-            else:
-                bestVal = min(vals)
+            bestVal = min(vals)
         else:
-            if max_count > 1:
-                for i in range(len(vals)):
-                    if vals[i] == max(vals):
-                        max_index.append(i)
-
-                bestVal = vals[max_index[int(max_count/2)]]
-            else:
-                bestVal = max(vals)
+            bestVal = max(vals)
 
         return bestVal
 
     def evaluateBoardState(self, board, depth):
-
         #cStart=time()
-
         #nbmove = self.count + (depth/2)
-
+        #checking the count of N-length streaks
         my_fours = self.checkStreak(board, 4, self.id)
         my_threes = self.checkStreak(board, 3, self.id)
         my_twos = self.checkStreak(board, 2, self.id)
@@ -131,6 +99,7 @@ class StudentAgent(RandomAgent):
         opp_threes = self.checkStreak(board, 3, self.id % 2 + 1)
         opp_twos = self.checkStreak(board, 2, self.id % 2 + 1)
 
+        #final weighted score
         final_score = ((((my_fours*196) + (my_threes*9) + (my_twos*1)) - ((opp_fours*196) + (opp_threes*9) + (opp_twos*1)))/5000)
         # + (22-nbmove)/18)/2
         #time()-cStart
@@ -147,6 +116,7 @@ class StudentAgent(RandomAgent):
         # return the sum of streaks of length 'streak'
         return count
 
+    #function to check N-length Streak in a rows
     def _check_rows(self, board, streak, turn):
         count = 0
         for row in range(board.height):
@@ -164,6 +134,7 @@ class StudentAgent(RandomAgent):
                     count += 1
         return count
 
+    #function to check N-length Streak in a columns
     def _check_columns(self, board, streak, turn):
         count = 0
         for i in range(board.width):
@@ -181,6 +152,7 @@ class StudentAgent(RandomAgent):
                     count += 1
         return count
 
+    #function to check N-length Streak in diagonals
     def _check_diagonals(self, board, streak, turn):
         count = 0
         boards = [
