@@ -35,9 +35,20 @@ class StudentAgent(RandomAgent):
                 return move
             vals.append( self.dfMiniMax(next_state, 1) )
 
-        print(vals)
+        #print(vals)
         #random.shuffle(list(vals))
-        bestMove = moves[vals.index( max(vals) )]
+        max_count = vals.count(max(vals))
+        max_index = []
+
+        if max_count > 1:
+            for i in range(len(vals)):
+                if vals[i] == max(vals):
+                    max_index.append(i)
+
+            bestMove = moves[max_index[int(max_count/2)]]
+        else:
+            bestMove = moves[vals.index( max(vals) )]
+
         return bestMove
 
     def dfMiniMax(self, board, depth):
@@ -64,11 +75,29 @@ class StudentAgent(RandomAgent):
         #print(vals)
         #print("Player :"+ str(depth % 2))
         #print(str(self.count))
+        max_count = vals.count(max(vals))
+        max_index = []
+        min_count = vals.count(min(vals))
+        min_index = []
 
         if depth % 2 == 1:
-            bestVal = min(vals)
+            if min_count > 1:
+                for i in range(len(vals)):
+                    if vals[i] == min(vals):
+                        min_index.append(i)
+
+                bestVal = vals[min_index[int(min_count/2)]]
+            else:
+                bestVal = min(vals)
         else:
-            bestVal = max(vals)
+            if max_count > 1:
+                for i in range(len(vals)):
+                    if vals[i] == max(vals):
+                        max_index.append(i)
+
+                bestVal = vals[max_index[int(max_count/2)]]
+            else:
+                bestVal = max(vals)
 
         return bestVal
 
@@ -113,22 +142,24 @@ class StudentAgent(RandomAgent):
 
         nbmove = self.count + (depth/2)
 
-        my_fours = self.checkStreak(board, 4, self.id)
+        if board.winner() != 0:
+            if board.winner() == self.id:
+                return 1
+            else:
+                return -1
+
+        #my_fours = self.checkStreak(board, 4, self.id)
         my_threes = self.checkStreak(board, 3, self.id)
         my_twos = self.checkStreak(board, 2, self.id)
-        opp_fours = self.checkStreak(board, 4,  self.id % 2 + 1)
+        #opp_fours = self.checkStreak(board, 4,  self.id % 2 + 1)
         opp_threes = self.checkStreak(board, 3, self.id % 2 + 1)
         opp_twos = self.checkStreak(board, 2, self.id % 2 + 1)
 
-        final_score = (((((my_fours*36) + (my_threes*9) + (my_twos*1)) - ((opp_fours*36) + (opp_threes*9) + (opp_twos*1)))/1000) + (22-nbmove)/18)/2
+        final_score = ((((my_threes*9) + (my_twos*1)) - ((opp_threes*9) + (opp_twos*1)))/1000)
+        #(my_fours*196) + (my_threes*16) + (my_twos*1)) - ((opp_fours*196) + (opp_threes*16) + (opp_twos*1)
         # + (22-nbmove)/18)/2
         #time()-cStart
-        #return random.uniform(0, 1)
-        #if opp_fours > 0:
-        #    return -1
-        #elif opp_fours > 0:
-        #    return 1
-        #else:
+
         return final_score
 
     def checkStreak(self, board, streak, turn):
@@ -143,30 +174,36 @@ class StudentAgent(RandomAgent):
 
     def _check_rows(self, board, streak, turn):
         count = 0
-        for row in board.board:
-            same_count = 1
-            curr = turn
-            for i in range(0, board.width):
-                if row[i] == curr:
-                    same_count += 1
-                    if same_count == streak and curr != 0:
-                        count += 1
-                else:
-                    same_count = 1
+        for row in range(board.height):
+            for j in range(0, board.width - board.num_to_connect + 1):
+                same_count = 0
+                curr = turn
+                for k in range(0, board.num_to_connect):
+                    if board.board[row][j+k] != (turn % 2 + 1):
+                        if board.board[row][j+k] == curr:
+                            same_count += 1
+                    else:
+                        same_count = 0
+                        break
+                if same_count == streak:
+                    count += 1
         return count
 
     def _check_columns(self, board, streak, turn):
         count = 0
         for i in range(board.width):
-            same_count = 1
-            curr = turn
-            for j in range(0, board.height):
-                if board.board[j][i] == curr:
-                    same_count += 1
-                    if same_count == streak and curr != 0:
-                        count += 1
-                else:
-                    same_count = 1
+            for j in range(board.height - board.num_to_connect + 1):
+                same_count = 0
+                curr = turn
+                for k in range(0, board.num_to_connect):
+                    if board.board[j+k][i] != (turn % 2 + 1):
+                        if board.board[j+k][i] == curr:
+                            same_count += 1
+                    else:
+                        same_count = 0
+                        break
+                if same_count == streak:
+                    count += 1
         return count
 
     def _check_diagonals(self, board, streak, turn):
@@ -183,16 +220,19 @@ class StudentAgent(RandomAgent):
                         continue
 
                     # (j, i) is start of diagonal
-                    same_count = 1
+                    same_count = 0
                     curr = turn
                     k, m = j, i
-                    while k < board.height and m < board.width:
-                            if b[k][m] == curr:
-                                same_count += 1
-                                if same_count == streak and curr != 0:
-                                    count += 1
+                    while k < board.height - board.num_to_connect and m < board.width - board.num_to_connect:
+                        for l in range(0, board.num_to_connect):
+                            if b[k+l][m+l] != (turn % 2 + 1):
+                                if b[k+l][m+l] == curr:
+                                    same_count += 1
                             else:
-                                same_count = 1
-                            k += 1
-                            m += 1
+                                same_count = 0
+                                break
+                        if same_count == streak:
+                            count += 1
+                        k += 1
+                        m += 1
         return count
