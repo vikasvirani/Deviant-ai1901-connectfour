@@ -57,49 +57,52 @@ class StudentAgent(RandomAgent):
         if depth == self.MaxDepth:
             return self.evaluateBoardState(board, depth)
 
-        valid_moves = board.valid_moves()
-        vals = []
-        moves = []
+        if  board.terminal() != True:
+            valid_moves = board.valid_moves()
+            vals = []
+            moves = []
 
-        #random.shuffle(list(valid_moves))
+            #random.shuffle(list(valid_moves))
 
-        for move in valid_moves:
+            for move in valid_moves:
+                if depth % 2 == 1:
+                    next_state = board.next_state(self.id % 2 + 1, move[1])
+                else:
+                    next_state = board.next_state(self.id, move[1])
+
+                moves.append( move )
+                vals.append( self.dfMiniMax(next_state, depth + 1) )
+
+            #print(vals)
+            #print("Player :"+ str(depth % 2))
+            #print(str(self.count))
+            max_count = vals.count(max(vals))
+            max_index = []
+            min_count = vals.count(min(vals))
+            min_index = []
+
             if depth % 2 == 1:
-                next_state = board.next_state(self.id % 2 + 1, move[1])
+                if min_count > 1:
+                    for i in range(len(vals)):
+                        if vals[i] == min(vals):
+                            min_index.append(i)
+
+                    bestVal = vals[min_index[int(min_count/2)]]
+                else:
+                    bestVal = min(vals)
             else:
-                next_state = board.next_state(self.id, move[1])
+                if max_count > 1:
+                    for i in range(len(vals)):
+                        if vals[i] == max(vals):
+                            max_index.append(i)
 
-            moves.append( move )
-            vals.append( self.dfMiniMax(next_state, depth + 1) )
+                    bestVal = vals[max_index[int(max_count/2)]]
+                else:
+                    bestVal = max(vals)
 
-        #print(vals)
-        #print("Player :"+ str(depth % 2))
-        #print(str(self.count))
-        max_count = vals.count(max(vals))
-        max_index = []
-        min_count = vals.count(min(vals))
-        min_index = []
-
-        if depth % 2 == 1:
-            if min_count > 1:
-                for i in range(len(vals)):
-                    if vals[i] == min(vals):
-                        min_index.append(i)
-
-                bestVal = vals[min_index[int(min_count/2)]]
-            else:
-                bestVal = min(vals)
+            return bestVal
         else:
-            if max_count > 1:
-                for i in range(len(vals)):
-                    if vals[i] == max(vals):
-                        max_index.append(i)
-
-                bestVal = vals[max_index[int(max_count/2)]]
-            else:
-                bestVal = max(vals)
-
-        return bestVal
+            return 0
 
     def evaluateBoardState(self, board, depth):
         """
@@ -155,7 +158,7 @@ class StudentAgent(RandomAgent):
         opp_threes = self.checkStreak(board, 3, self.id % 2 + 1)
         opp_twos = self.checkStreak(board, 2, self.id % 2 + 1)
 
-        final_score = ((((my_threes*9) + (my_twos*1)) - ((opp_threes*9) + (opp_twos*1)))/1000)
+        final_score = ((((my_threes*16) + (my_twos*1)) - ((opp_threes*16) + (opp_twos*1)))/1000)
         #(my_fours*196) + (my_threes*16) + (my_twos*1)) - ((opp_fours*196) + (opp_threes*16) + (opp_twos*1)
         # + (22-nbmove)/18)/2
         #time()-cStart
