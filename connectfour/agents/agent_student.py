@@ -1,3 +1,5 @@
+# Author : Vikas Virani - s3715555
+
 from connectfour.agents.computer_player import RandomAgent
 from time import gmtime
 import copy
@@ -22,6 +24,10 @@ class StudentAgent(RandomAgent):
         vals = []
         moves = []
         self.count += 1
+        int columnOrder[board.width];
+        #initialize the column exploration order, starting with center columns
+        for i in range(length(columnOrder)):
+            columnOrder[i] = board.width/2 + (1-2*(i%2))*(i+1)/2;
         #random.shuffle(list(valid_moves))
 
         for move in valid_moves:
@@ -52,9 +58,13 @@ class StudentAgent(RandomAgent):
         valid_moves = board.valid_moves()
         vals = []
         moves = []
+        #int columnOrder[board.width];
+        #initialize the column exploration order, starting with center columns
+        #for i in range(length(columnOrder)):
+        #    columnOrder[i] = board.width/2 + (1-2*(i%2))*(i+1)/2;
 
         #random.shuffle(list(valid_moves))
-        #
+
         for move in valid_moves:
             if depth % 2 == 1:
                 next_state = board.next_state(self.id % 2 + 1, move[1])
@@ -76,10 +86,6 @@ class StudentAgent(RandomAgent):
 
         #print("Player :"+ str(depth % 2))
         #print(str(self.count))
-        max_count = vals.count(max(vals))
-        max_index = []
-        min_count = vals.count(min(vals))
-        min_index = []
 
         if depth % 2 == 1:
             bestVal = min(vals)
