@@ -9,7 +9,7 @@ import math
 class StudentAgent(RandomAgent):
     def __init__(self, name):
         super().__init__(name)
-        self.MaxDepth = 4
+        self.MaxDepth = 2
         self.count = 0
 
     def get_move(self, board):
@@ -23,12 +23,6 @@ class StudentAgent(RandomAgent):
         valid_moves = board.valid_moves()
         vals = []
         moves = []
-        self.count += 1
-        #columnOrder[board.width];
-        #initialize the column exploration order, starting with center columns
-        #for i in range(length(columnOrder)):
-        #    columnOrder[i] = board.width/2 + (1-2*(i%2))*(i+1)/2;
-        #random.shuffle(list(valid_moves))
 
         for move in valid_moves:
             next_state = board.next_state(self.id, move[1])
@@ -36,9 +30,21 @@ class StudentAgent(RandomAgent):
             #revised MiniMax with alpha-beta value
             vals.append( self.dfMiniMax(next_state, 1,-math.inf, math.inf) )
 
-        #print(vals)
-        #random.shuffle(list(vals))
-        bestMove = moves[vals.index( max(vals) )]
+        max_count = vals.count(max(vals))
+        max_index = []
+
+        #Taking middle value instead of first when multile maximum values
+        if max_count > 1:
+            for i in range(len(vals)):
+                if vals[i] == max(vals):
+                    max_index.append(i)
+
+            bestMove = moves[max_index[int(max_count/2)]]
+        else:
+            bestMove = moves[vals.index( max(vals) )]
+
+        print(vals)
+        print(bestMove)
         return bestMove
 
     def dfMiniMax(self, board, depth, alpha, beta):
@@ -46,9 +52,9 @@ class StudentAgent(RandomAgent):
 
         if  board.terminal() is False:
             if board.winner() == self.id:
-                return 1
+                return 1 - (depth - 2)/10
             elif board.winner() == self.id % 2 + 1:
-                return -1
+                return -1 + (depth - 2)/10
         else:
             return 0
 
@@ -74,40 +80,58 @@ class StudentAgent(RandomAgent):
             moves.append( move )
             vals.append( self.dfMiniMax(next_state, depth + 1, alpha, beta) )
 
-            #alpha-beta pruning
+            if len(vals) != 0:
+                #alpha-beta pruning
+                if depth % 2 == 1:
+                    beta = min(min(vals), beta)
+                    if alpha >= beta:
+                        break
+                else:
+                    alpha = max(alpha, max(vals))
+                    if alpha >= beta:
+                        break
+
+        if len(vals) != 0:
+            max_count = vals.count(max(vals))
+            min_count = vals.count(min(vals))
+            max_index = []
+            min_index = []
+
+            #Taking middle value instead of first when multile minimum values
             if depth % 2 == 1:
-                beta = min(min(vals), beta)
-                if alpha >= beta:
-                    break
+                if min_count > 1:
+                    for i in range(len(vals)):
+                        if vals[i] == min(vals):
+                            min_index.append(i)
+                    bestVal = vals[min_index[int(min_count/2)]]
+                else:
+                    bestVal = min(vals)
+            #Taking middle value instead of first when multile maximum values
             else:
-                alpha = max(alpha, max(vals))
-                if alpha >= beta:
-                    break
+                if max_count>1:
+                    for i in range(len(vals)):
+                        if vals[i] == max(vals):
+                            max_index.append(i)
+                    bestVal = vals[max_index[int(max_count/2)]]
+                else:
+                    bestVal = max(vals)
 
-        #print("Player :"+ str(depth % 2))
-        #print(str(self.count))
-
-        if depth % 2 == 1:
-            bestVal = min(vals)
+            return bestVal
         else:
-            bestVal = max(vals)
-
-        return bestVal
+            return 0
 
     def evaluateBoardState(self, board, depth):
         #cStart=time()
-        #nbmove = self.count + (depth/2)
+
         #checking the count of N-length streaks
-        my_fours = self.checkStreak(board, 4, self.id)
         my_threes = self.checkStreak(board, 3, self.id)
         my_twos = self.checkStreak(board, 2, self.id)
-        opp_fours = self.checkStreak(board, 4,  self.id % 2 + 1)
         opp_threes = self.checkStreak(board, 3, self.id % 2 + 1)
         opp_twos = self.checkStreak(board, 2, self.id % 2 + 1)
 
         #final weighted score
-        final_score = ((((my_fours*196) + (my_threes*9) + (my_twos*1)) - ((opp_fours*196) + (opp_threes*9) + (opp_twos*1)))/5000)
-        # + (22-nbmove)/18)/2
+        final_score = (((my_threes*9) + (my_twos*1)) - ((opp_threes*9) + (opp_twos*1)))/500
+
         #time()-cStart
 
         return final_score
