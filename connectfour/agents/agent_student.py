@@ -24,10 +24,10 @@ class StudentAgent(RandomAgent):
         vals = []
         moves = []
         self.count += 1
-        int columnOrder[board.width];
+        #columnOrder[board.width];
         #initialize the column exploration order, starting with center columns
-        for i in range(length(columnOrder)):
-            columnOrder[i] = board.width/2 + (1-2*(i%2))*(i+1)/2;
+        #for i in range(length(columnOrder)):
+        #    columnOrder[i] = board.width/2 + (1-2*(i%2))*(i+1)/2;
         #random.shuffle(list(valid_moves))
 
         for move in valid_moves:
