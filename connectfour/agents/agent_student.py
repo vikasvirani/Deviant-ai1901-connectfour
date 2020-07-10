@@ -9,7 +9,7 @@ import math
 class StudentAgent(RandomAgent):
     def __init__(self, name):
         super().__init__(name)
-        self.MaxDepth = 2
+        self.MaxDepth = 4
         self.count = 0
 
     def get_move(self, board):
